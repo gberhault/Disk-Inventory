@@ -12,13 +12,14 @@
 //  of the License, or any later version.
 //
 
-#import <OmniAppKit/OAController.h>
-
 #import <Cocoa/Cocoa.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppController : OAController
+//Was an OmniAppKit OAController subclass; OmniAppKit has been removed. This class is
+//now a plain object (the real NSApplication delegate is MyDocumentController, wired in
+//MainMenu.nib). Kept for the empty IBOutlets/actions the nib may still reference.
+@interface AppController : NSObject
 {
 //    IBOutlet NSMenu* _zoomStackMenu;
 //    IBOutlet NSPanel* _donationPanel;

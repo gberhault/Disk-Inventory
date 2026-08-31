@@ -170,12 +170,17 @@ BOOL g_EnableLogging;
 
 - (void) applicationWillFinishLaunching: (NSNotification*) notification
 {
-    //verify that our custom DocumentController is in use 
+    //verify that our custom DocumentController is in use
     NSAssert( [[NSDocumentController sharedDocumentController] isKindOfClass: [MyDocumentController class]], @"the shared DocumentController is not our custom class!" );
-    
-    //@@test
-    //[[OAController sharedController] applicationWillFinishLaunching:notification];
-	
+
+    //register the app's default preference values. This was previously done by OmniAppKit's
+    //OFController from the Info.plist "OFRegistrations" dictionary; OmniAppKit has been removed,
+    //so we register them here (before any default is read below or by the UI bindings).
+    NSDictionary *registrations = [[NSBundle mainBundle] objectForInfoDictionaryKey: @"OFRegistrations"];
+    NSDictionary *defaultsDictionary = [[registrations objectForKey: @"NSUserDefaults"] objectForKey: @"defaultsDictionary"];
+    if ( defaultsDictionary != nil )
+        [[NSUserDefaults standardUserDefaults] registerDefaults: defaultsDictionary];
+
 	g_EnableLogging = [[NSUserDefaults standardUserDefaults] boolForKey: EnableLogging];
     
 	//show the drives panel before "applicationDidFinishLaunching" so the panel is visible before the first document is loaded
