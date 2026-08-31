@@ -22,12 +22,13 @@ is free software under the **GNU General Public License v3** (see [`COPYING`](CO
 
 | | |
 |--|--|
-| macOS | 10.11 (El Capitan) or later |
-| Apple Silicon | ⚠️ **Runs under Rosetta 2 only** — the app currently ships as an Intel-only (x86_64) binary. Native arm64 / universal support is in progress: see **[Epic #2](https://github.com/gberhault/Disk-Inventory/issues/2)**. |
-| Intel | ✅ Native (x86_64) |
+| Chip | **Apple Silicon (arm64) only** |
+| macOS | 12.0 (Monterey) or later |
+| Intel | ❌ Not supported — Intel/x86_64 is intentionally dropped (Rosetta is being deprecated; Intel Macs are past end-of-life). |
 
-The application's own code is not architecture-restricted; the arm64 blockers are the
-prebuilt external frameworks it links (see [Dependencies](#dependencies)).
+Native arm64 support is in progress under **[Epic #2](https://github.com/gberhault/Disk-Inventory/issues/2)**:
+the `TreeMapView` renderer is now vendored in-repo and builds for arm64; the legacy Omni
+frameworks are being removed rather than restored (see [Dependencies](#dependencies)).
 
 ## Building
 
@@ -42,18 +43,20 @@ Runtime** and Developer ID signing + notarization.
 
 ### Dependencies
 
-The project links four **prebuilt frameworks that are not included in this repository** and
-are referenced by paths outside it:
+Historically the project linked several **prebuilt external frameworks**. These are being
+brought in-repo or removed so the project builds self-contained for Apple Silicon:
 
-- `TreeMapView.framework` — the treemap renderer (its own Xcode project, external to this repo)
-- `OmniAppKit.framework`, `OmniFoundation.framework`, `OmniBase.framework` — the
-  [Omni Group](https://github.com/omnigroup/OmniGroup) frameworks (a 2018 prebuilt set)
+- `TreeMapView.framework` — the treemap renderer. **Now vendored** in
+  [`treemapview-framework/`](treemapview-framework/) and built for arm64
+  ([#7](https://github.com/gberhault/Disk-Inventory/issues/7)).
+- `OmniAppKit`, `OmniFoundation`, `OmniBase` — the
+  [Omni Group](https://github.com/omnigroup/OmniGroup) frameworks (an unmaintained 2018
+  Intel-only set). **Being removed** (decoupled to plain AppKit), not restored
+  ([#5](https://github.com/gberhault/Disk-Inventory/issues/5),
+  [#4](https://github.com/gberhault/Disk-Inventory/issues/4)).
 
-You must supply these frameworks (matching the search paths in the Xcode project) to build.
-Reducing/removing this dependency is tracked under the Apple Silicon epic
-([#5](https://github.com/gberhault/Disk-Inventory/issues/5),
-[#4](https://github.com/gberhault/Disk-Inventory/issues/4),
-[#7](https://github.com/gberhault/Disk-Inventory/issues/7)).
+Until the Omni decoupling lands, the app target does not yet compile (its prefix header
+imports `<OmniBase/OmniBase.h>`); the vendored `TreeMapView` framework builds on its own.
 
 ## Project layout
 
