@@ -95,6 +95,8 @@
 		FCFB17B621B876A400E3F8C4 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FCFB17B521B876A400E3F8C4 /* Images.xcassets */; };
 		FADE03000000000000000001 /* FileSizeFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = FCCFB2D1097FA42B009EA2B6 /* FileSizeFormatter.m */; };
 		FADE03000000000000000003 /* FileSizeFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FADE03000000000000000002 /* FileSizeFormatterTests.m */; };
+		FADE0300000000000000000B /* NSURL-Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = FC33B459230C846F00133632 /* NSURL-Extensions.m */; };
+		FADE0300000000000000000D /* NSURLExtensionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FADE0300000000000000000C /* NSURLExtensionsTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -291,6 +293,7 @@
 		FCFB17B521B876A400E3F8C4 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "Disk Inventory X/Images.xcassets"; sourceTree = "<group>"; };
 		FADE03000000000000000002 /* FileSizeFormatterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Tests/FileSizeFormatterTests.m"; sourceTree = SOURCE_ROOT; };
 		FADE03000000000000000004 /* Disk Inventory X Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Disk Inventory X Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FADE0300000000000000000C /* NSURLExtensionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Tests/NSURLExtensionsTests.m"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -851,6 +854,8 @@
 			files = (
 				FADE03000000000000000001 /* FileSizeFormatter.m in Sources */,
 				FADE03000000000000000003 /* FileSizeFormatterTests.m in Sources */,
+				FADE0300000000000000000B /* NSURL-Extensions.m in Sources */,
+				FADE0300000000000000000D /* NSURLExtensionsTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1130,7 +1135,11 @@
 					"$(inherited)",
 					"-framework",
 					XCTest,
+					"-framework",
+					Cocoa,
 				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Disk Inventory X_Prefix.pch";
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryXTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1153,7 +1162,11 @@
 					"$(inherited)",
 					"-framework",
 					XCTest,
+					"-framework",
+					Cocoa,
 				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Disk Inventory X_Prefix.pch";
 				PRODUCT_BUNDLE_IDENTIFIER = com.derlien.DiskInventoryXTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
