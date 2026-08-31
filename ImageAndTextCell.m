@@ -118,7 +118,7 @@
     // Make sure string is longer than requested width
     if ([string sizeWithAttributes:attribs].width > width)
     {
-        NSString *ellipsis = [NSString horizontalEllipsisString];
+        NSString *ellipsis = @"…"; //horizontal ellipsis (was OmniFoundation's +horizontalEllipsisString)
         
        // Accommodate for ellipsis we�ll tack on the end
         width -= [ellipsis sizeWithAttributes:attribs].width;

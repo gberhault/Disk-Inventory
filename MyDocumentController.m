@@ -65,18 +65,25 @@ BOOL g_EnableLogging;
 		for ( NSURL *fileURL in [sheet URLs] )
 		{
 			//defer it till the next loop cycle to let the sheet closes itself first
-			[[NSRunLoop currentRunLoop] performSelector:@selector(openDocumentWithContentsOfFile:)
+			[[NSRunLoop currentRunLoop] performSelector:@selector(openFolderDocumentAtURL:)
 												 target: self
-                                               argument: [fileURL path]
+                                               argument: fileURL
 												  order: 1
 												  modes: [NSArray arrayWithObject: NSDefaultRunLoopMode]];
 		}
 	}
 }
 
-- (void) openDocumentWithContentsOfFile: (NSString*) fileName
+// Modern URL-based folder opener used by the drives panel, the open panel and drag/open.
+// (The old file-path document APIs are deprecated and are no-ops on current macOS.)
+- (void) openFolderDocumentAtURL: (NSURL*) url
 {
-	[self openDocumentWithContentsOfFile: fileName display: [self shouldCreateUI]];
+	[self openDocumentWithContentsOfURL: url
+								display: YES
+					  completionHandler: ^(NSDocument *document, BOOL documentWasAlreadyOpen, NSError *error) {
+		// The folder's contents are loaded synchronously in -[FileSystemDoc readFromURL:ofType:error:],
+		// which surfaces its own errors; a user-cancelled scan is intentionally silent.
+	}];
 }
 
 - (BOOL) applicationShouldOpenUntitledFile: (NSApplication*) sender
@@ -85,17 +92,25 @@ BOOL g_EnableLogging;
     return NO;
 }
 
-- (id)makeDocumentWithContentsOfFile:(NSString *)fileName ofType:(NSString *)docType
+// A folder has no file extension and its modern UTI is public.folder, so map any directory
+// URL to our "Folder" document type (the Info.plist HFS OSType mapping is ignored on modern macOS).
+- (NSString *)typeForContentsOfURL:(NSURL *)url error:(NSError **)outError
 {
-	//check whether "fileName" is a folder
-	NSDictionary *attribs = [[NSFileManager defaultManager] fileAttributesAtPath: fileName traverseLink: NO];
-    if ( attribs != nil )
-	{
-		NSString *type = [attribs fileType];
-		if ( type != nil && [type isEqualToString: NSFileTypeDirectory] )
-			return [super makeDocumentWithContentsOfFile:fileName ofType: @"Folder"];
-	}
-	
+	NSNumber *isDirectory = nil;
+	if ( [url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:NULL] && [isDirectory boolValue] )
+		return @"Folder";
+
+	return [super typeForContentsOfURL:url error:outError];
+}
+
+- (id)makeDocumentWithContentsOfURL:(NSURL *)url ofType:(NSString *)typeName error:(NSError **)outError
+{
+	NSNumber *isDirectory = nil;
+	if ( [url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:NULL] && [isDirectory boolValue] )
+		return [super makeDocumentWithContentsOfURL:url ofType:@"Folder" error:outError];
+
+	if ( outError != NULL )
+		*outError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadNoSuchFileError userInfo:nil];
 	return nil;
 }
 
@@ -111,7 +126,7 @@ BOOL g_EnableLogging;
 	
 	for ( NSURL *dir in fileNames )
 	{
-		[self openDocumentWithContentsOfFile: [dir path] display: YES];
+		[self openFolderDocumentAtURL: dir];
 	}
 }
 
@@ -125,18 +140,18 @@ BOOL g_EnableLogging;
     completionHandler(nil, nil);
 }
 
-//Application's delegate; called if file from recent list is selected
-- (BOOL) application: (NSApplication*) theApp openFile: (NSString*) fileName
+//Application's delegate; called when folders are opened via Finder, drag-and-drop, the
+//recent-items list or `open`. (Modern replacement for the deprecated -application:openFile:,
+//which is no longer called on current macOS.)
+- (void) application: (NSApplication*) application openURLs: (NSArray<NSURL *> *) urls
 {
-	//if "fileName" doesn't exist or isn't a folder, return NO so that it is removed from the recent list
-	NSDictionary *attribs = [[NSFileManager defaultManager] attributesOfItemAtPath: fileName error:nil];
-    if ( attribs == nil || ![[attribs fileType] isEqualToString: NSFileTypeDirectory] )
-		return NO;
-
-	[self openDocumentWithContentsOfFile: fileName];
-	
-	//return TRUE to avoid nasty message if user canceled loading
-	return TRUE;
+	for ( NSURL *url in urls )
+	{
+		//we only open existing folders/volumes
+		NSNumber *isDirectory = nil;
+		if ( [url getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:NULL] && [isDirectory boolValue] )
+			[self openFolderDocumentAtURL: url];
+	}
 }
 
 - (NSString *)typeFromFileExtension:(NSString *)fileExtensionOrHFSFileType

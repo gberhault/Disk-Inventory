@@ -88,7 +88,10 @@
 			}
 		}
 		
-		[_additionalAppURLs sortOnAttribute: @selector(name) usingSelector: @selector(caseInsensitiveCompare:)];
+		//sort the app URLs by their (case-insensitive) name — was OmniFoundation's -sortOnAttribute:usingSelector:
+		[_additionalAppURLs sortUsingComparator: ^NSComparisonResult(NSURL *a, NSURL *b) {
+			return [[a name] caseInsensitiveCompare: [b name]];
+		}];
 	}
 	
 	return _additionalAppURLs;

@@ -232,6 +232,22 @@ NSString *OldItem = @"OldItem";
     // Add any code here that needs to be executed once the windowController has loaded the document's window.
 }
 
+// Modern URL-based read entry point that NSDocument actually calls on current macOS.
+// (The old -readFromFile:ofType: below is deprecated and no longer invoked by AppKit.)
+- (BOOL) readFromURL: (NSURL *) url ofType: (NSString *) typeName error: (NSError * _Nullable *) outError
+{
+    //Resolve symlinks so the root path matches the (already resolved) paths produced while
+    //enumerating children — e.g. opening /tmp/... must become /private/tmp/... to stay consistent.
+    NSURL *resolvedURL = [url URLByResolvingSymlinksInPath];
+    BOOL ok = [self readFromFile: [resolvedURL path] ofType: typeName];
+
+    if ( !ok && outError != NULL )
+        *outError = [NSError errorWithDomain: NSCocoaErrorDomain
+                                        code: NSFileReadUnknownError
+                                    userInfo: nil];
+    return ok;
+}
+
 - (BOOL) readFromFile: (NSString *) folder ofType: (NSString *) docType
 {
     [self checkForProtectedFolders:folder];
