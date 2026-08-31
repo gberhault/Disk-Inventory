@@ -1,0 +1,16 @@
+# Xcode build output
+build/
+DerivedData/
+*.xcresult
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+*.xcuserstatee
+
+# macOS
+.DS_Store
+
+# Generated coverage / test reports (regenerate locally; see CLAUDE.md → Reporting)
+*.gcov
+coverage/
