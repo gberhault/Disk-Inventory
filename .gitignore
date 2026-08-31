@@ -8,6 +8,12 @@ xcuserdata/
 *.xcuserstate
 *.xcuserstatee
 
+# Legacy Xcode project user state
+*.mode1
+*.mode1v3
+*.pbxuser
+*.perspectivev3
+
 # macOS
 .DS_Store
 

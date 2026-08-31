@@ -6,7 +6,13 @@
     #import <Cocoa/Cocoa.h>
     #import <Carbon/Carbon.h>
 
-    #import <OmniBase/OmniBase.h>
+    #import "NSString-DIXExtensions.h"
+
+    //Lightweight replacement for OmniBase's OBPRECONDITION (OmniBase framework removed).
+    //Assertion in debug builds; compiled out in release (NDEBUG) like NSAssert.
+    #define OBPRECONDITION(expr) NSAssert((expr), @"OBPRECONDITION failed: %s", #expr)
+    #define OBPOSTCONDITION(expr) NSAssert((expr), @"OBPOSTCONDITION failed: %s", #expr)
+    #define OBASSERT(expr) NSAssert((expr), @"OBASSERT failed: %s", #expr)
 
 
 	//global variable which enables/disables logging

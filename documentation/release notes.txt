@@ -1,6 +1,18 @@
 release notes
 =============
 
+1.4b3
+-----
+new:
+- native Apple Silicon (arm64) support; Intel/x86_64 is no longer built
+- please note that macOS 12 (Monterey) or later is now required
+
+changed:
+- the TreeMapView renderer is now built from source inside the project
+- removed the dependency on the (unmaintained, Intel-only) OmniAppKit/OmniFoundation
+  frameworks; the toolbar and preferences window were reimplemented on plain AppKit
+
+
 1.2 (2019-02-28)
 ----------------
 new:

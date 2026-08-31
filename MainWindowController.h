@@ -2,9 +2,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import "FileSystemDoc.h"
-#import <TreeMapView/TreeMapView.h>
+#import "TreeMapView.h"
 #import "OAToolbarWindowControllerEx.h"
-#import <OmniAppKit/OASplitView.h>
+#import "OASplitView.h"
 
 @interface MainWindowController : OAToolbarWindowControllerEx
 {

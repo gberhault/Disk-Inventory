@@ -23,12 +23,22 @@ Disk Inventory X is a **native macOS** app only (Cocoa / AppKit, document-based 
 
 ### Current focus (before feature work)
 
-The app currently builds as **Intel-only (x86_64)** and runs on Apple Silicon **only
-under Rosetta 2**. Native arm64 / universal support is the standing priority. The
-blockers are the prebuilt external frameworks (`TreeMapView.framework` and the 2018-era
-`OmniAppKit` / `OmniFoundation` / `OmniBase`), which lack arm64 slices — the app's own
-Objective-C code is not arch-restricted. Treat "make it a universal binary" as the
-active epic; scope any new work against it.
+**Target: Apple Silicon (arm64) only.** Intel/x86_64 is dropped entirely — no
+universal/fat binaries — because Rosetta 2 is being deprecated and Intel Macs are long
+past end-of-life, so an x86_64 slice would be pure maintenance/test overhead. Build all
+targets `ARCHS = arm64`.
+
+The legacy blockers were the prebuilt external frameworks that lacked arm64 and (for the
+Omni set) were unmaintained/Intel-only. Status:
+
+- `TreeMapView.framework` — **vendored in-repo** at `treemapview-framework/` and building
+  arm64 (its PowerPC render paths are `#ifdef __ppc__`-guarded, so they compile out).
+- `OmniAppKit` / `OmniFoundation` / `OmniBase` — being **removed** (decoupled to plain
+  AppKit), not restored; the app's prefix header force-imports `<OmniBase/OmniBase.h>`,
+  so the app does not compile until this is done.
+
+Treat "native Apple Silicon build" as the active epic ([#2](https://github.com/gberhault/Disk-Inventory/issues/2));
+scope any new work against it.
 
 ## Task Tracking
 

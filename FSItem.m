@@ -16,7 +16,6 @@
 
 #import "FSItem.h"
 #import "NSURL-Extensions.h"
-#import <OmniFoundation/NSMutableArray-OFExtensions.h>
 #import "NTFilePasteboardSource.h"
 
 //for debugging and logging purposes
@@ -342,14 +341,31 @@ NSString* FSItemLoadingFailedException = @"FSItemLoadingFailedException";
 	}
 }
 
+//Sorted insertion that replaces OmniFoundation's -[NSMutableArray insertObject:inArraySortedUsingSelector:].
+//Keeps 'array' ordered so that for every pair i<j: [array[i] compareSelector: array[j]] == NSOrderedAscending.
+static void DIXInsertObjectSorted(NSMutableArray *array, id object, SEL compareSelector)
+{
+	NSUInteger low = 0, high = [array count];
+	while ( low < high )
+	{
+		NSUInteger mid = (low + high) / 2;
+		NSComparisonResult order = (NSComparisonResult)(NSInteger)[[array objectAtIndex: mid] performSelector: compareSelector withObject: object];
+		if ( order == NSOrderedAscending )
+			low = mid + 1;
+		else
+			high = mid;
+	}
+	[array insertObject: object atIndex: low];
+}
+
 - (void) insertChild: (FSItem*) newChild updateParent: (BOOL) updateParent
 {
 	unsigned long long myOldSize = [self sizeValue];
-	
+
 	[newChild setParent: self];
-	
+
 	//insert child sorted by size
-	[_childs insertObject: newChild inArraySortedUsingSelector: @selector(compareSizeDescendingly:)];
+	DIXInsertObjectSorted( _childs, newChild, @selector(compareSizeDescendingly:) );
 	
 	[self setSizeValue: [self sizeValue] + [newChild sizeValue]];
 	

@@ -27,5 +27,5 @@
 - (IBAction) gotoHomepage: (id) sender;
 - (IBAction) closeDonationPanel: (id) sender;
 
-- (void) openDocumentWithContentsOfFile: (NSString*) fileName; //calls "openDocumentWithContentsOfFile: fileName display: [self shouldCreateUI]"
+- (void) openFolderDocumentAtURL: (NSURL*) url; //opens the folder/volume at "url" as a document and scans it
 @end

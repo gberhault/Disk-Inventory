@@ -5,64 +5,68 @@
 //  Created by Tjark Derlien on 29.11.04.
 //
 //  Copyright (C) 2004 Tjark Derlien.
-//  
+//
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
 //  as published by the Free Software Foundation; either version 3
 //  of the License, or any later version.
-
 //
 
 #import "PrefsPageBase.h"
-#import <OmniFoundation/OFNull.h>
 
 @implementation PrefsPageBase
 
-- (void)restoreDefaultsNoPrompt;
+- (instancetype) initWithRecord: (NSDictionary*) record;
 {
-    [super restoreDefaultsNoPrompt];
-#pragma warning "code diabled"
-    /*
-	//the preferences shown in each page must be declared in info.plist proberly!
-	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-	
-    unsigned int preferenceIndex = [preferences count];
-    while (preferenceIndex--)
-	{
-        NSString *aKey = [[preferences objectAtIndex: preferenceIndex] key];
-		
-		//removeObjectForKey isn't Key-Value-Observing (KVO) compliant,
-		//so make sure all observers get notified
-		[prefs willChangeValueForKey: aKey];
-		[prefs removeObjectForKey: aKey];
-		[prefs didChangeValueForKey: aKey];
-	}
-     */
+	self = [super init];
+	if ( self != nil )
+		_record = [record retain];
+
+	return self;
 }
 
-- (BOOL)haveAnyDefaultsChanged;
+- (void) dealloc
 {
-    return [super haveAnyDefaultsChanged];
-#pragma warning "code diabled"
-/*
-    //the preferences shown in each page and their default values must be declared in info.plist proberly!
- 	NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-	NSDictionary *defaultValues = [prefs volatileDomainForName: NSRegistrationDomain];
-	
-    unsigned int preferenceIndex = [preferences count];
-    while (preferenceIndex--)
+	[_topLevelObjects release];
+	[_record release];
+	[super dealloc];
+}
+
+- (NSString *) identifier;
+{
+	return [_record objectForKey: @"identifier"];
+}
+
+- (NSString *) title;
+{
+	NSString *title = [_record objectForKey: @"title"];
+	return title != nil ? NSLocalizedString( title, @"" ) : [self identifier];
+}
+
+- (NSString *) iconName;
+{
+	return [_record objectForKey: @"icon"];
+}
+
+- (NSString *) nibName;
+{
+	return [_record objectForKey: @"nib"];
+}
+
+- (NSView*) contentView;
+{
+	if ( controlBox == nil )
 	{
-        NSString *key = [[preferences objectAtIndex: preferenceIndex] key];
-		
-		id defValue = [defaultValues objectForKey: key];
-		id prefValue = [prefs objectForKey: key];
-		
-		if ( OFNOTEQUAL( prefValue, defValue ) )
-			return YES;
+		NSNib *nib = [[[NSNib alloc] initWithNibNamed: [self nibName] bundle: nil] autorelease];
+		NSArray *topLevelObjects = nil;
+
+		if ( [nib instantiateWithOwner: self topLevelObjects: &topLevelObjects] )
+			_topLevelObjects = [topLevelObjects retain];
+
+		NSAssert1( controlBox != nil, @"preferences page nib '%@' did not connect the controlBox outlet", [self nibName] );
 	}
-	
-	return NO;
- */
+
+	return controlBox;
 }
 
 @end
