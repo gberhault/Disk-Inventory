@@ -97,6 +97,8 @@
 		FADE03000000000000000003 /* FileSizeFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FADE03000000000000000002 /* FileSizeFormatterTests.m */; };
 		FADE0300000000000000000B /* NSURL-Extensions.m in Sources */ = {isa = PBXBuildFile; fileRef = FC33B459230C846F00133632 /* NSURL-Extensions.m */; };
 		FADE0300000000000000000D /* NSURLExtensionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FADE0300000000000000000C /* NSURLExtensionsTests.m */; };
+		FADE03000000000000000015 /* Preferences.m in Sources */ = {isa = PBXBuildFile; fileRef = FCCFB2C2097FA42B009EA2B6 /* Preferences.m */; };
+		FADE03000000000000000017 /* PreferencesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FADE03000000000000000016 /* PreferencesTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -294,6 +296,7 @@
 		FADE03000000000000000002 /* FileSizeFormatterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Tests/FileSizeFormatterTests.m"; sourceTree = SOURCE_ROOT; };
 		FADE03000000000000000004 /* Disk Inventory X Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Disk Inventory X Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FADE0300000000000000000C /* NSURLExtensionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Tests/NSURLExtensionsTests.m"; sourceTree = SOURCE_ROOT; };
+		FADE03000000000000000016 /* PreferencesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Tests/PreferencesTests.m"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -854,6 +857,8 @@
 			files = (
 				FADE03000000000000000001 /* FileSizeFormatter.m in Sources */,
 				FADE03000000000000000003 /* FileSizeFormatterTests.m in Sources */,
+				FADE03000000000000000015 /* Preferences.m in Sources */,
+				FADE03000000000000000017 /* PreferencesTests.m in Sources */,
 				FADE0300000000000000000B /* NSURL-Extensions.m in Sources */,
 				FADE0300000000000000000D /* NSURLExtensionsTests.m in Sources */,
 			);
