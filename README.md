@@ -85,6 +85,15 @@ This repository follows a spec-driven, test-first workflow documented in
 - Version bump (`MARKETING_VERSION`) lands on the branch before the PR; tag `vX.Y.Z` after merge.
 - User-facing text must be localized into all supported languages.
 
+## Support the project
+
+Disk Inventory X is free software, developed in spare time. If it helps you reclaim disk
+space and you'd like to support continued development, you can sponsor the project:
+
+[💜 **Sponsor on GitHub**](https://github.com/sponsors/gberhault)
+
+Sponsorships are entirely optional — the app is and will remain free under the GPL.
+
 ## License
 
 Disk Inventory X is licensed under the **GNU General Public License, version 3** — see
