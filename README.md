@@ -26,9 +26,15 @@ is free software under the **GNU General Public License v3** (see [`COPYING`](CO
 | macOS | 12.0 (Monterey) or later |
 | Intel | ❌ Not supported — Intel/x86_64 is intentionally dropped (Rosetta is being deprecated; Intel Macs are past end-of-life). |
 
-Native arm64 support is in progress under **[Epic #2](https://github.com/gberhault/Disk-Inventory/issues/2)**:
-the `TreeMapView` renderer is now vendored in-repo and builds for arm64; the legacy Omni
-frameworks are being removed rather than restored (see [Dependencies](#dependencies)).
+Native arm64 support shipped in **[v1.4b3](https://github.com/gberhault/Disk-Inventory/releases/tag/v1.4b3)**
+([Epic #2](https://github.com/gberhault/Disk-Inventory/issues/2)): the app builds as a
+self-contained arm64 binary that links only system frameworks.
+
+## Download
+
+Get the latest DMG from the [Releases page](https://github.com/gberhault/Disk-Inventory/releases).
+Builds are **ad-hoc signed but not notarized**, so Gatekeeper warns on first launch:
+right-click the app → **Open** (or **System Settings → Privacy & Security → Open Anyway**).
 
 ## Building
 
@@ -38,25 +44,31 @@ Open `Disk Inventory X.xcodeproj` in Xcode and build the **Disk Inventory X** sc
 xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X" -configuration Debug build
 ```
 
-`BuildRelease.sh` runs a plain Release build. The project is configured for **Hardened
-Runtime** and Developer ID signing + notarization.
+Run the unit tests (they live in their own scheme):
+
+```bash
+xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X Tests" -configuration Debug test
+```
+
+To build without a signing identity, add `CODE_SIGNING_ALLOWED=NO`. `BuildRelease.sh` runs
+a plain Release build. The project uses **Hardened Runtime**; published builds are ad-hoc
+signed (see [Download](#download)).
 
 ### Dependencies
 
-Historically the project linked several **prebuilt external frameworks**. These are being
-brought in-repo or removed so the project builds self-contained for Apple Silicon:
+The project builds self-contained with no external frameworks:
 
-- `TreeMapView.framework` — the treemap renderer. **Now vendored** in
-  [`treemapview-framework/`](treemapview-framework/) and built for arm64
+- `TreeMapView` — the treemap renderer, **vendored** in
+  [`treemapview-framework/`](treemapview-framework/) and compiled into the app
   ([#7](https://github.com/gberhault/Disk-Inventory/issues/7)).
-- `OmniAppKit`, `OmniFoundation`, `OmniBase` — the
-  [Omni Group](https://github.com/omnigroup/OmniGroup) frameworks (an unmaintained 2018
-  Intel-only set). **Being removed** (decoupled to plain AppKit), not restored
-  ([#5](https://github.com/gberhault/Disk-Inventory/issues/5),
-  [#4](https://github.com/gberhault/Disk-Inventory/issues/4)).
+- The legacy [Omni Group](https://github.com/omnigroup/OmniGroup) frameworks
+  (`OmniAppKit`, `OmniFoundation`, `OmniBase` — an unmaintained 2018 Intel-only set) have
+  been **removed**; the toolbar and preferences window are reimplemented on plain AppKit
+  ([#4](https://github.com/gberhault/Disk-Inventory/issues/4),
+  [#5](https://github.com/gberhault/Disk-Inventory/issues/5)).
 
-Until the Omni decoupling lands, the app target does not yet compile (its prefix header
-imports `<OmniBase/OmniBase.h>`); the vendored `TreeMapView` framework builds on its own.
+Remaining deprecated-API cleanup is tracked in
+[Epic #10](https://github.com/gberhault/Disk-Inventory/issues/10).
 
 ## Project layout
 
