@@ -21,24 +21,27 @@ folders gracefully rather than crashing or hanging.
 Disk Inventory X is a **native macOS** app only (Cocoa / AppKit, document-based via
 `NSDocument`). It is licensed under **GPL v3** (see [`COPYING`](COPYING)).
 
-### Current focus (before feature work)
+### Platform and current focus
 
 **Target: Apple Silicon (arm64) only.** Intel/x86_64 is dropped entirely — no
 universal/fat binaries — because Rosetta 2 is being deprecated and Intel Macs are long
 past end-of-life, so an x86_64 slice would be pure maintenance/test overhead. Build all
 targets `ARCHS = arm64`.
 
-The legacy blockers were the prebuilt external frameworks that lacked arm64 and (for the
-Omni set) were unmaintained/Intel-only. Status:
+The native arm64 port ([Epic #2](https://github.com/gberhault/Disk-Inventory/issues/2)) is
+**done** and shipped as `v1.4b3`:
 
-- `TreeMapView.framework` — **vendored in-repo** at `treemapview-framework/` and building
-  arm64 (its PowerPC render paths are `#ifdef __ppc__`-guarded, so they compile out).
-- `OmniAppKit` / `OmniFoundation` / `OmniBase` — being **removed** (decoupled to plain
-  AppKit), not restored; the app's prefix header force-imports `<OmniBase/OmniBase.h>`,
-  so the app does not compile until this is done.
+- `TreeMapView` — **vendored in-repo** at `treemapview-framework/` and compiled into the app
+  (its PowerPC render paths are `#ifdef __ppc__`-guarded, so they compile out).
+- `OmniAppKit` / `OmniFoundation` / `OmniBase` — **removed**; toolbar and preferences window
+  reimplemented on plain AppKit. Do not reintroduce them.
 
-Treat "native Apple Silicon build" as the active epic ([#2](https://github.com/gberhault/Disk-Inventory/issues/2));
-scope any new work against it.
+The open epic is **deprecated-API modernization**
+([#10](https://github.com/gberhault/Disk-Inventory/issues/10)) — the app builds with ~160
+deprecation warnings tracked by its child issues.
+
+Published builds are **ad-hoc signed, not notarized** (no paid Apple Developer account;
+#6 closed as not applicable).
 
 ## Task Tracking
 
@@ -106,12 +109,12 @@ would violate one of these, flag it explicitly, even if the user asked for exact
 - **Input.** Treat file names, extended attributes, and metadata as untrusted data — do
   not execute or interpret them. Never pass user paths to a shell unescaped.
 - **Secrets & signing.** No signing identities, provisioning secrets, or credentials in
-  source or version control. The app uses **Hardened Runtime** and is set up for
-  Developer ID signing + notarization — keep entitlements minimal
+  source or version control. The app uses **Hardened Runtime**; published builds are
+  ad-hoc signed (no Developer ID). Keep entitlements minimal
   ([`Disk Inventory X.entitlements`](Disk%20Inventory%20X.entitlements) is intentionally empty).
-- **Dependencies.** The prebuilt `Omni*` frameworks are from 2018 and unmaintained here;
-  flag any decision that deepens reliance on them. Prefer reducing/removing them (see
-  Current focus) over adding new Omni API usage.
+- **Dependencies.** The app links only system frameworks. The `Omni*` frameworks were
+  removed — never reintroduce them. Flag any new third-party dependency (and verify its
+  license is GPL-compatible).
 
 ### UI / UX
 
@@ -137,8 +140,7 @@ would violate one of these, flag it explicitly, even if the user asked for exact
   responsive during scans.
 - When touching the treemap, go through the `TreeMapView` framework API — do not fork its
   rendering into the app.
-- Prefer reducing coupling to OmniAppKit (preferences window, toolbar controller,
-  `OAController`) over extending it (see Current focus).
+- Prefer current AppKit APIs over deprecated ones when touching code (see Epic #10).
 
 ### Performance
 
@@ -247,8 +249,13 @@ test suite must pass locally with coverage checked:
 
 ```bash
 xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X" \
-  -configuration Debug clean build test -enableCodeCoverage YES
+  -configuration Debug CODE_SIGNING_ALLOWED=NO clean build
+xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X Tests" \
+  -configuration Debug CODE_SIGNING_ALLOWED=NO test -enableCodeCoverage YES
 ```
+
+Tests live in the separate **`Disk Inventory X Tests`** scheme — the app scheme has no test
+action, so `test` on it fails immediately.
 
 Do **not** open a PR if the build fails, any test fails, or coverage is below the gate
 (see Coverage Requirements). If a shared XCTest target does not yet exist, **creating it
@@ -357,7 +364,7 @@ For every task:
 8. Bump the app version (see Version Management) as the last commit on the branch.
 9. Run the local CI build+test gate and fix failures (mandatory).
 10. Open the PR **only when the user asks** — the version bump and the `specs/<feature-name>/` directory must be included.
-11. **After the PR merges into `master`:** if that PR bumped the version, **immediately** create and push the matching tag on the merge commit (see Version Management). Signed/notarized artifacts and the GitHub Release may follow in the same session.
+11. **After the PR merges into `master`:** if that PR bumped the version, **immediately** create and push the matching tag on the merge commit (see Version Management). Ad-hoc signed artifacts and the GitHub Release may follow in the same session.
 
 Code is only considered complete when:
 
@@ -387,12 +394,12 @@ If implementation time must be traded against testing time, **prioritize testing
 
 ## Test Frameworks
 
-There is currently **no test target** in the Xcode project. Establishing one is the
-**first development prerequisite** before the coverage gate can be enforced.
+The **`Disk Inventory X Tests`** XCTest target (its own shared scheme) holds the unit tests
+(#3). Coverage is still well below the 80% gate — grow it feature by feature.
 
 | Framework / tool | Purpose |
 |------------------|---------|
-| **XCTest** | Unit + integration test runner (add a `Disk Inventory X Tests` unit-test target) |
+| **XCTest** | Unit + integration test runner (`Disk Inventory X Tests` target) |
 | **XCUITest** | UI tests where user interaction is affected (optional, add a UI-test target when needed) |
 | **xcodebuild -enableCodeCoverage YES** | Runs tests with coverage instrumentation |
 | **xccov** | Read/report coverage from the `.xcresult` bundle |
@@ -558,7 +565,7 @@ into `master` (user says "merged" or merge is confirmed), **immediately** on the
 1. `git pull origin master`
 2. Read the version source of truth (`MARKETING_VERSION` in the Xcode project) — do not guess.
 3. Create the annotated tag `v<MARKETING_VERSION>` if it does not already exist, and push it.
-4. Build the **signed + notarized** app and attach it to a GitHub Release on that tag when
+4. Build the **ad-hoc signed** app and attach it to a GitHub Release on that tag when
    the release checklist calls for a published build.
 
 Tags cannot be part of the PR itself (tag after merge only). Docs-only / chore merges with
@@ -567,14 +574,15 @@ Tags cannot be part of the PR itself (tag after merge only). Docs-only / chore m
 #### Release build (after tag)
 
 1. Confirm `MARKETING_VERSION` matches the tag.
-2. Build Release, sign with Developer ID, and notarize:
+2. Build Release and ad-hoc sign (there is no paid Developer ID, so no notarization):
    ```bash
    xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X" \
      -configuration Release clean build
-   # then: codesign (Developer ID) → notarytool submit --wait → stapler staple
+   # then: codesign --force --deep --options runtime --sign - "Disk Inventory X.app"
    ```
-3. Zip the `.app` and create the GitHub Release on the tag with that artifact. Release notes:
-   only what changed since the previous published tag.
+3. Package as a DMG and create the GitHub Release on the tag with that artifact. Release
+   notes: only what changed since the previous published tag, plus the Gatekeeper
+   "right-click → Open" install note.
 
 ---
 
@@ -657,7 +665,7 @@ Use commit type `chore` for patch bumps and `feat` for minor/major bumps.
 ### After the PR merges (tag + artifacts)
 
 If the merged PR bumped the version, tagging is mandatory in the same session (pull `master`
-→ annotated `vX.Y.Z` → push), then signed/notarized artifacts + GitHub Release as applicable
+→ annotated `vX.Y.Z` → push), then ad-hoc signed artifacts + GitHub Release as applicable
 (see Pull Request Summary → Release build).
 
 ### Release notes rules
@@ -735,7 +743,7 @@ Document-based Cocoa app. The document (`FileSystemDoc`, an `NSDocument`) owns t
 
 **Preferences**
 - `Preferences` (keys/defaults), `PrefsPanelController`, `PrefsPageBase`, `GeneralPrefPage`,
-  `TreeMapPrefPage` — the Preferences window (currently built on OmniAppKit)
+  `TreeMapPrefPage` — the Preferences window (plain AppKit)
 
 **Formatters / transformers**
 - `FileSizeFormatter`, `FileSizeTransformer`, `VolumeNameTransformer`, `VolumeUsageTransformer`
@@ -747,9 +755,9 @@ Document-based Cocoa app. The document (`FileSystemDoc`, an `NSDocument`) owns t
 - `documentation/` — project docs, release notes, known bugs
 - `specs/<feature-name>/` — the spec (`requirements.md`, `design.md`, `tasks.md`) driving each change
 
-**External frameworks (not in repo; see Current focus)**
-- `TreeMapView.framework` — the treemap renderer (author's own framework; source lives outside this repo)
-- `OmniAppKit` / `OmniFoundation` / `OmniBase` — 2018 prebuilt Omni frameworks (toolbar, preferences window, categories)
+**Vendored code**
+- `treemapview-framework/` — the `TreeMapView` treemap renderer (original author's framework), compiled into the app
+- No external/prebuilt frameworks; the former Omni frameworks were removed
 
 ### Common Task Map
 
@@ -771,14 +779,14 @@ Reuse this before searching — these are the files a typical change touches:
 # Build (Debug)
 xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X" -configuration Debug build
 
-# Build + test with coverage (mandatory before PR; requires an XCTest target)
-xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X" \
-  -configuration Debug clean build test -enableCodeCoverage YES
+# Test with coverage (mandatory before PR; tests have their own scheme)
+xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X Tests" \
+  -configuration Debug test -enableCodeCoverage YES -resultBundlePath build/tests.xcresult
 
 # Read coverage from the result bundle
-xcrun xccov view --report --only-targets <path-to>.xcresult
+xcrun xccov view --report --only-targets build/tests.xcresult
 
-# Release build (before signing + notarization)
+# Release build (before ad-hoc signing)
 xcodebuild -project "Disk Inventory X.xcodeproj" -scheme "Disk Inventory X" -configuration Release clean build
 ```
 
