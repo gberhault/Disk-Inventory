@@ -5,6 +5,8 @@ builds a model of the file system, and renders it as a **treemap** — a "cushio
 visualization where each file is a rectangle sized by how much disk space it uses — so you
 can see at a glance what is filling up your disk and act on it.
 
+![Disk Inventory X scanning /System/Library: file kinds list on the left, folder outline in the middle, and the cushion treemap on the right, in Dark Mode](documentation/images/screenshot.png)
+
 It is a native Cocoa (AppKit), document-based macOS application written in Objective-C, and
 is free software under the **GNU General Public License v3** (see [`COPYING`](COPYING)).
 
